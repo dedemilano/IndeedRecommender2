@@ -5,8 +5,9 @@ from firebase_admin import firestore
 class FirebaseManager:
     def __init__(self, credential_path): 
         # Initialize Firebase Admin SDK
-        cred = credentials.Certificate(credential_path)
-        firebase_admin.initialize_app(cred)
+        if not firebase_admin._apps:
+            cred = credentials.Certificate(credential_path)
+            firebase_admin.initialize_app(cred)
         # Initialize Firestore DB
         self.db = firestore.client()
 
