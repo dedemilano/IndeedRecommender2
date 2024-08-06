@@ -6,3 +6,4 @@ google-auth
 firebase_admin
 pymongo
 python-dotenv
+google-cloud-translate==2.0.1
