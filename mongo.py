@@ -16,6 +16,7 @@ class MongoDBManager:
             collection.insert_one(data)
             print(f'Data added to {collection_name}/{document_id}')
         except pymongo.errors.DuplicateKeyError:
+            self.update_data_in_mongodb(collection_name, document_id, data)
             print(f'Document with id {document_id} already exists in {collection_name}')
         except Exception as e:
             print(f'Error adding data to MongoDB: {e}')
@@ -42,3 +43,19 @@ class MongoDBManager:
         except Exception as e:
             print(f'Error reading documents: {e}')
             return None
+
+    def update_data_in_mongodb(self, collection_name, document_id, data):
+        try:
+            collection = self.db[collection_name]
+            old_data = self.read_single_document(collection_name, document_id)
+            for key in data.keys():
+                if key in old_data.keys() and len(data[key]) != len(old_data[key]):
+                    continue
+                if key not in old_data.keys():
+                    old_data[key] = data[key]
+                else:
+                    old_data[key].extend(data[key])
+            collection.update_one({'_id': document_id}, {'$set': old_data})
+            print(f'Data updated in {collection_name}/{document_id}')
+        except Exception as e:
+            print(f'Error updating data in MongoDB: {e}')
