@@ -49,13 +49,16 @@ class MongoDBManager:
             collection = self.db[collection_name]
             old_data = self.read_single_document(collection_name, document_id)
             for key in data.keys():
-                if key in old_data.keys() and len(data[key]) != len(old_data[key]):
-                    print("new data length is not equal to old data length")
-                    continue
-                if key not in old_data.keys():
-                    old_data[key] = data[key]
-                else:
-                    old_data[key].extend(data[key])
+                for key2 in data[key].keys():
+                    if key in old_data.keys() and key2 in old_data[key].keys() and len(old_data[key][key2])== len(data[key][key2]):
+                        print("nothing to update")
+                        break
+                    if key in old_data.keys() and key2 in old_data[key].keys():
+                        old_data[key].extend(data[key])
+                    else:
+                        if key in old_data.keys():
+                            old_data[key] = {}
+                        old_data[key] = data[key]       
             collection.update_one({'_id': document_id}, {'$set': old_data})
             print(f'Data updated in {collection_name}/{document_id}')
         except Exception as e:
