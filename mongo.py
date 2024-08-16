@@ -50,6 +50,7 @@ class MongoDBManager:
             old_data = self.read_single_document(collection_name, document_id)
             for key in data.keys():
                 if key in old_data.keys() and len(data[key]) != len(old_data[key]):
+                    print("new data length is not equal to old data length")
                     continue
                 if key not in old_data.keys():
                     old_data[key] = data[key]
