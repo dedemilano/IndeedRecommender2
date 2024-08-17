@@ -1,5 +1,7 @@
 import pymongo
 from pymongo import MongoClient
+import gridfs
+import json
 
 class MongoDBManager:
     def __init__(self, connection_string, database_name):
@@ -8,6 +10,8 @@ class MongoDBManager:
         # Initialize database
         self.db = self.client[database_name]
 
+        self.fs = gridfs.GridFS(self.db)
+        
     # Function to add data to MongoDB
     def add_data_to_mongodb(self, collection_name, document_id, data):
         try:
@@ -38,7 +42,7 @@ class MongoDBManager:
         try:
             collection = self.db[collection_name]
             docs = collection.find()
-            all_docs = {doc['_id']: doc for doc in docs}
+            all_docs = {doc['_id']: {key: value for key, value in doc.items() if key != '_id'} for doc in docs}
             return all_docs
         except Exception as e:
             print(f'Error reading documents: {e}')
@@ -48,18 +52,93 @@ class MongoDBManager:
         try:
             collection = self.db[collection_name]
             old_data = self.read_single_document(collection_name, document_id)
-            for key in data.keys():
-                for key2 in data[key].keys():
-                    if key in old_data.keys() and key2 in old_data[key].keys() and len(old_data[key][key2])== len(data[key][key2]):
-                        print("nothing to update")
-                        break
-                    if key in old_data.keys() and key2 in old_data[key].keys():
-                        old_data[key].extend(data[key])
+
+            for key, nested_data in data.items():
+                if key not in old_data:
+                    old_data[key] = {}
+                for key2, values in nested_data.items():
+                    if key2 in old_data[key] and len(old_data[key][key2]) == len(values):
+                        print("Nothing to update")
+                        continue
+                    if key2 in old_data[key]:
+                        old_data[key][key2].extend(values)
                     else:
-                        if key in old_data.keys():
-                            old_data[key] = {}
-                        old_data[key] = data[key]       
+                        old_data[key][key2] = values
+
             collection.update_one({'_id': document_id}, {'$set': old_data})
             print(f'Data updated in {collection_name}/{document_id}')
+
         except Exception as e:
             print(f'Error updating data in MongoDB: {e}')
+
+
+    def add_data_like_json_with_GridFS(self, document_id, data):
+        try:
+            data['_id'] = document_id
+            data = json.dumps(data)
+            data = data.encode('utf-8')
+            file_id = self.fs.put(data, filename=document_id+'.json')
+            print(f'Data added to {document_id} with file_id: {file_id}')
+        except Exception as e:
+            print(f'Error adding data to MongoDB: {e}')
+    
+    def update_data_before_save_new_json_with_GridFS(self, document_id, data):
+        try:
+            old_data={}
+            existing_file = self.fs.find_one({"filename": document_id+".json"})
+            if existing_file:
+                loaded_old_data = json.loads(existing_file.read().decode('utf-8'))
+                old_data= {profession: value for profession, value in loaded_old_data.items() if profession != '_id'}
+            
+            print(old_data.keys())
+            for profession, nested_data in data.items():
+                if profession not in old_data:
+                    old_data[profession] = {}
+                for language, values in nested_data.items():
+                    if language in old_data[profession] and len(old_data[profession][language]) == len(values):
+                        print("Nothing to update")
+                        continue
+                    if language in old_data[profession]:
+                        old_data[profession][language].extend(values)
+                    else:
+                        old_data[profession][language] = values
+            
+            if existing_file:
+                self.fs.delete(existing_file._id)
+            self.add_data_like_json_with_GridFS(document_id, old_data)
+            print("")
+        except Exception as e:
+            print(f'Error updating data in MongoDB: {e}')
+    
+    def read_single_document_with_GridFS(self, document_id):
+        try:
+            existing_file = self.fs.find_one({"filename": document_id+".json"}).read()
+            if existing_file:
+                loaded_data = json.loads(existing_file.decode('utf-8'))
+                print(f'Document data: {loaded_data}')
+            else:
+                print(f'No such document: {document_id}')
+            return loaded_data
+        except Exception as e:
+            print(f'Error reading document: {e}')
+            return None
+        
+    def read_all_documents_in_collection_with_GridFS(self):
+        try:
+            all_docs = {}
+            for file in self.fs.find():
+                loaded_data = json.loads(file.read().decode('utf-8'))
+                all_docs[file.filename[:-5]] = {profession: value for profession, value in loaded_data.items() if profession != '_id'}
+            return all_docs
+        except Exception as e:
+            print(f'Error reading documents: {e}')
+            return None
+    
+    
+    
+    
+    
+    
+    
+    
+    
