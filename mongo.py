@@ -95,11 +95,10 @@ class MongoDBManager:
                 if profession not in old_data:
                     old_data[profession] = {}
                 for language, values in nested_data.items():
-                    if language in old_data[profession] and len(old_data[profession][language]) == len(values):
-                        print("Nothing to update")
-                        continue
                     if language in old_data[profession]:
-                        old_data[profession][language].extend(values)
+                        existing_values_set = set(map(json.dumps,old_data[profession][language]))
+                        new_values_set = set(map(json.dumps,values))
+                        old_data[profession][language]= list(map(json.loads,existing_values_set.union(new_values_set)))
                     else:
                         old_data[profession][language] = values
             
@@ -127,15 +126,29 @@ class MongoDBManager:
         try:
             all_docs = {}
             for file in self.fs.find():
-                loaded_data = json.loads(file.read().decode('utf-8'))
-                all_docs[file.filename[:-5]] = {key: value for key, value in loaded_data.items() if key != '_id'}
+                try:       
+                    loaded_data = json.loads(file.read().decode('utf-8'))
+                    all_docs[file.filename[:-5]] = {key: value for key, value in loaded_data.items() if key != '_id'}
+                except Exception as doc_error:
+                    print(f"Erreur lors de la lecture du document ID {file._id}: {doc_error}")
             return all_docs
         except Exception as e:
             print(f'Error reading documents: {e}')
             return None
     
-    
-    
+    def find_and_solve_error(self):
+        print("Find and solve error")
+        try:
+            for grid_out in self.fs.find():
+                try:
+                    data = grid_out.read()
+                    # Traitez les données ici, par exemple les afficher
+                    # print(f"Document ID: {grid_out._id}, Data: {data}")
+                except Exception as doc_error:
+                    print(f"Erreur lors de la lecture du document ID {grid_out._id}: {doc_error}")
+        except Exception as e:
+            print(f"Erreur lors de la lecture de la collection: {e}")
+            
     
     """
 The active selection is a Python class called MongoDBManager. This class is responsible for managing interactions with a MongoDB database. It provides methods for adding data to the database, reading documents from the database, and updating data in the database.
