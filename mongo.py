@@ -2,6 +2,7 @@ import pymongo
 from pymongo import MongoClient
 import gridfs
 import json
+import os
 
 class MongoDBManager:
     def __init__(self, connection_string, database_name):
@@ -148,7 +149,52 @@ class MongoDBManager:
                     print(f"Erreur lors de la lecture du document ID {grid_out._id}: {doc_error}")
         except Exception as e:
             print(f"Erreur lors de la lecture de la collection: {e}")
+
+    def gettotalsizeof(self, object ):
+        file_path="temp_data.json"
+        """
+        Saves an object to a JSON file and retrieves the file size in bytes.
+
+        Args:
+        object (dict): The dictionary to be saved.
+        file_path (str): The path of the file to save the dictionary.
+
+        Returns:
+        int: The size of the file in bytes after saving.
+        """
+        try:
+            with open(file_path, 'w') as f:
+                json.dump(object, f, indent=4) 
             
+            file_size = os.path.getsize(file_path)
+            print(f"Dictionary saved in {file_path}")
+            print(f"File size: {file_size} bytes")
+            return file_size
+        except IOError as e:
+            print(f"Error saving the dictionary: {e}")
+            return None
+
+    
+    def get_database_storage_infos(self):
+        stats = self.db.command("dbStats")
+        print("Taille des données : "+str(stats["dataSize"]/1024/1024)+" Mo")
+        print("Taille des données en pourcentage: "+str(stats["dataSize"]/1024/1024/512*100)+" %")
+        
+    def get_if_database_is_available_for_adding_data(self,data):
+        try:
+            stats = self.db.command("dbStats")
+            print("Taille des données existante : "+ str((stats["dataSize"])/1024/1024))
+            print("Taille des données à ajouter : "+str(self.gettotalsizeof(data)/1024/1024))
+            left_estimated_size = (512-(stats["dataSize"]+self.gettotalsizeof(data))/1024/1024)
+            print("Taille restante Estimée après ajout de la nouvelle donnée: "+ str(left_estimated_size))
+            if left_estimated_size < 20:
+                print("Database is not available to add data because the estimated size is less than 20Mo")
+                return False
+            else:
+                print("Database is available to add data")
+                return True
+        except Exception as e:
+            print(f"Database is not available: {e}")   
     
     """
 The active selection is a Python class called MongoDBManager. This class is responsible for managing interactions with a MongoDB database. It provides methods for adding data to the database, reading documents from the database, and updating data in the database.
