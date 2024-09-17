@@ -183,10 +183,10 @@ class MongoDBManager:
     def get_if_database_is_available_for_adding_data(self,data):
         try:
             stats = self.db.command("dbStats")
-            print("Taille des données existante : "+ str((stats["dataSize"])/1024/1024))
-            print("Taille des données à ajouter : "+str(self.gettotalsizeof(data)/1024/1024))
+            print("Taille des données existante : "+ str((stats["dataSize"])/1024/1024)+" Mo")
+            print("Taille des données à ajouter : "+str(self.gettotalsizeof(data)/1024/1024)+" Mo")
             left_estimated_size = (512-(stats["dataSize"]+self.gettotalsizeof(data))/1024/1024)
-            print("Taille restante Estimée après ajout de la nouvelle donnée: "+ str(left_estimated_size))
+            print("Taille restante Estimée après ajout de la nouvelle donnée: "+ str(left_estimated_size)+" Mo")
             if left_estimated_size < 20:
                 print("Database is not available to add data because the estimated size is less than 20Mo")
                 return False
