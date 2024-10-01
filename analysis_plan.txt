@@ -10,7 +10,7 @@ for data processing :
  
         
 for processing data for salaryInfoAndJobType and salary
-    -À partir de 1 474 € par mois - CDI, Temps partiel     À partir de 2 244 € par mois == salary(À partir de 1 474 € par mois - CDI, Temps partiel)
+    -À partir de 1 474 € par mois - CDI, Temps partiel À partir de 2 244 € par mois == salary(À partir de 1 474 € par mois - CDI, Temps partiel)
     -for salary void watch in salaryInfoAndJobType
     -hybrid data language to change to uniform 
     -find language and translate
