@@ -1,0 +1,25 @@
+for data processing :
+    for column positionTitle , 
+        -remove dates
+        -remove salary rates
+        -remove hour rates 
+        -replace codes by actual position title in the description if possible.Example(RN/RPN)
+        -rename bad encodings 
+        -remove jobtype , shiftandschedule (possibly put it in the actual good columns if values missing there)
+        -remove location if possible
+ 
+        
+for processing data for salaryInfoAndJobType and salary
+    -À partir de 1 474 € par mois - CDI, Temps partiel À partir de 2 244 € par mois == salary(À partir de 1 474 € par mois - CDI, Temps partiel)
+    -for salary void watch in salaryInfoAndJobType
+    -hybrid data language to change to uniform 
+    -find language and translate
+
+for company_name 
+    -remove bad encodings(sequence of squares in names)
+
+for location 
+    -remove special characters in the beginnings 
+
+concatenate location and country if country not in location
+
