@@ -1,1 +1,3 @@
-Agente commerciale ou agent commercial, politique ou du service extérieur [11] cntryIdx [2] langIdx [1] pgLangIdx [0] Agente culturelle ou agent culturel [12] cntryIdx [0] langIdx [0] pgLangIdx [0] Agente culturelle ou agent culturel [12] pgLangIdx [1] langIdx [1] pgLangIdx [1] pgLangIdx [1] langIdx [1] pgLangIdx [1] cntryIdx [2] langIdx [0] pgLangIdx [1] 
+Agente commerciale ou agent commercial, politique ou du service extérieur [11] cntryIdx [2] langIdx [1] pgLangIdx [0] 
+Agente culturelle ou agent culturel / Cultural agent [13] cntryIdx [2] langIdx [1] pgLangIdx [1]  (end)
+Agente culturelle ou agent culturel / Cultural agent [13] cntryIdx [2] langIdx [1] pgLangIdx [1] 
