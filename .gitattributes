@@ -1,0 +1,2 @@
+indeedJobData.csv filter=lfs diff=lfs merge=lfs -text
+indeedJobData.json filter=lfs diff=lfs merge=lfs -text
