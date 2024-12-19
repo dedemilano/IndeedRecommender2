@@ -1,3 +1,33 @@
+# 1. Imports
+import getpass
+import os
+from langchain_anthropic import ChatAnthropic
+from langchain_ollama import OllamaEmbeddings
+from langchain_chroma import Chroma
+from langchain import hub
+from langchain_community.document_loaders import JSONLoader
+import json
+from pathlib import Path
+from langchain_core.documents import Document 
+from langchain_text_splitters import RecursiveCharacterTextSplitter 
+from langgraph.graph import START, StateGraph, MessagesState
+from typing_extensions import List, TypedDict
+import subprocess
+from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, MessagesPlaceholder
+from typing import Literal, Dict, Any
+from typing_extensions import Annotated
+from langgraph.checkpoint.memory import MemorySaver
+from tqdm import tqdm
+import time
+import math
+from langchain_mistralai import MistralAIEmbeddings
+import concurrent.futures
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain.chains import ConversationalRetrievalChain
+from langchain_core.messages import HumanMessage, AIMessage
+from langchain.memory import ConversationBufferMemory
+from dotenv import load_dotenv
+
 import getpass
 import os
 from langchain_anthropic import ChatAnthropic
@@ -12,6 +42,33 @@ import json
 import gc
 import time
 from tqdm import tqdm
+import shutil
+
+from dotenv import load_dotenv
+import os
+
+# Charger les variables d'environnement
+load_dotenv()
+
+os.environ["LANGCHAIN_TRACING_V2"] = "true"
+
+# Utiliser les variables
+MISTRALAI_API_KEY = os.getenv("MISTRALAI_API_KEY")
+LANGCHAIN_API_KEY = os.getenv("LANGCHAIN_API_KEY")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+HF_TOKEN = os.getenv("HF_TOKEN")
+
+print("MISTRALAI_API_KEY :", MISTRALAI_API_KEY)
+print("LANGCHAIN_API_KEY :", LANGCHAIN_API_KEY)
+print("ANTHROPIC_API_KEY :", ANTHROPIC_API_KEY)
+
+
+def reset_chroma_db():
+    """Supprime la base de données Chroma existante"""
+    if os.path.exists("./chroma_db"):
+        shutil.rmtree("./chroma_db")
+        print("Base de données Chroma réinitialisée")
 
 # 1. Chargement optimisé des données
 def load_json_data(file_path='./indeedJobData.json', batch_size=1000):
@@ -56,12 +113,12 @@ def prepare_documents_batch(loader, batch_size=1000):
     return splits
 
 # 3. Configuration des embeddings
+# 3. Configuration des embeddings
 def setup_embeddings():
-    from langchain_mistralai import MistralAIEmbeddings
-    return MistralAIEmbeddings(
-        model="mistral-embed",
-        mistral_api_key=MISTRALAI_API_KEY
+    return HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-mpnet-base-v2"
     )
+
 
 # 4. Configuration et ajout au vectorstore par lots
 def setup_and_add_to_vectorstore(splits, embeddings, batch_size=100):
