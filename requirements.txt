@@ -21,3 +21,4 @@ langchain-chroma
 langgraph
 langchain_mistralai
 jq
+psutil
